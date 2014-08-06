@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import openerp
 
+import sys
+sys.path.append('openerp')
+
 if __name__ == "__main__":
     openerp.cli.main()
 

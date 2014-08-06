@@ -102,6 +102,23 @@ function openerp_pos_widgets(instance, module){ //module is instance.point_of_sa
         }
     });
 
+    module.PaypadWidget1 = module.PosBaseWidget.extend({
+        template: 'PaypadWidget1',
+        renderElement: function() {
+            var self = this;
+            this._super();
+
+            _.each(this.pos.cashregisters,function(cashregister) {
+                var button = new module.PaypadButtonWidget1(self,{
+                    pos: self.pos,
+                    pos_widget : self.pos_widget,
+                    cashregister: cashregister,
+                });
+                button.appendTo(self.$el);
+            });
+        }
+    });
+
     module.PaypadButtonWidget = module.PosBaseWidget.extend({
         template: 'PaypadButtonWidget',
         init: function(parent, options){
@@ -119,6 +136,27 @@ function openerp_pos_widgets(instance, module){ //module is instance.point_of_sa
                 }
                 self.pos.get('selectedOrder').addPaymentline(self.cashregister);
                 self.pos_widget.screen_selector.set_current_screen('payment');
+            });
+        },
+    });
+
+    module.PaypadButtonWidget1 = module.PosBaseWidget.extend({
+        template: 'PaypadButtonWidget1',
+        init: function(parent, options){
+            this._super(parent, options);
+            this.cashregister = options.cashregister;
+        },
+        renderElement: function() {
+            var self = this;
+            this._super();
+
+            this.$el.click(function(){
+                if (self.pos.get('selectedOrder').get('screen') === 'receipt'){  //TODO Why ?
+                    console.warn('TODO should not get there...?');
+                    return;
+                }
+                self.pos.get('selectedOrder').addPaymentline(self.cashregister);
+                self.pos_widget.screen_selector.set_current_screen('payment1');
             });
         },
     });
@@ -1054,6 +1092,9 @@ function openerp_pos_widgets(instance, module){ //module is instance.point_of_sa
 
             this.payment_screen = new module.PaymentScreenWidget(this, {});
             this.payment_screen.appendTo(this.$('.screens'));
+            
+            this.payment_screen1 = new module.PaymentScreenWidget1(this, {});
+            this.payment_screen1.appendTo(this.$('.screens'));            
 
             this.clientlist_screen = new module.ClientListScreenWidget(this, {});
             this.clientlist_screen.appendTo(this.$('.screens'));
@@ -1109,6 +1150,9 @@ function openerp_pos_widgets(instance, module){ //module is instance.point_of_sa
 
             this.paypad = new module.PaypadWidget(this, {});
             this.paypad.replace(this.$('.placeholder-PaypadWidget'));
+            
+            this.paypad1 = new module.PaypadWidget1(this, {});
+            this.paypad1.replace(this.$('.placeholder-PaypadWidget1'));
 
             this.numpad = new module.NumpadWidget(this);
             this.numpad.replace(this.$('.placeholder-NumpadWidget'));
@@ -1128,6 +1172,7 @@ function openerp_pos_widgets(instance, module){ //module is instance.point_of_sa
                 screen_set:{
                     'products': this.product_screen,
                     'payment' : this.payment_screen,
+                    'payment1' : this.payment_screen1,
                     'scale':    this.scale_screen,
                     'receipt' : this.receipt_screen,
                     'clientlist': this.clientlist_screen,
@@ -1165,9 +1210,11 @@ function openerp_pos_widgets(instance, module){ //module is instance.point_of_sa
                 if(visible){
                     this.numpad.show();
                     this.paypad.show();
+                    this.paypad1.show();
                 }else{
                     this.numpad.hide();
                     this.paypad.hide();
+                    this.paypad1.hide();
                 }
             }
         },
